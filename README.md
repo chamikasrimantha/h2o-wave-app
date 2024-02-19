@@ -1,5 +1,9 @@
 # Movie Recommendation System using h2o wave
 
+
+https://github.com/chamikasrimantha/h2o-wave-app/assets/137622812/72d94f44-b3f4-47b5-9443-97d0de48cda1
+
+
 ## Getting Started
 
 ### 1. Check the version of Python, must be Python 3.9+ but recommended to use Python 3.10+ for best experience
@@ -42,6 +46,9 @@ wave run app
 ### 7. View the app:
 Point your favorite web browser to http://localhost:10101/recommender
 
-## Others
+### Testing
+Tests are located in ```/tests```. See instructions on [h2o wave docs](https://wave.h2o.ai/docs/browser-testing) to configure tests.
+
+### Others
 
 [h2o wave documentation](https://wave.h2o.ai/docs/getting-started)
