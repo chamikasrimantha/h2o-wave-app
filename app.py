@@ -105,7 +105,7 @@ def add_search_box(q: Q, msg):
                         primary=True,
                         icon="Movie",
                     ),
-                    ui.button(name="find_movies", label="Find Movie", primary=False),
+                    ui.button(name="find_movies", label="Show Recommendation", primary=False),
                 ]
             ),
             ui.text(msg, size="m", name="msg_text"),
