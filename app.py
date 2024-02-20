@@ -1,146 +1,140 @@
-# app.py
-from rec_sys.rec_func import recommender
-from h2o_wave import Q, main, app, ui
-from fuzzywuzzy import process
-from typing import Any
+from h2o_wave import ui, app, main, data
+import pandas as pd
+import sys
+
+# Function to handle file operations and read the CSV file
+def read_csv_file():
+    file_name = './data/movies.csv'
+    try:
+        with open(file_name, 'r') as file:
+            return pd.read_csv(file_name)
+    except FileNotFoundError:
+        print(f"File {file_name} not found. Aborting")
+        sys.exit(1)
+    except OSError:
+        print(f"OS error occurred trying to open {file_name}")
+        sys.exit(1)
+    except Exception as err:
+        print(f"Unexpected error opening {file_name}: {repr(err)}")
+        sys.exit(1)
 
 
-def search_movies(movie_name: str) -> list[tuple[Any, Any | int, Any] | tuple[Any, Any | int]]:
-    """
-    Find similar movies name wise (using Levenshtein distance).
-    """
-   
-    return process.extract(movie_name, recommender.movie_names)
 
+# Function to process and prepare the data for display
+def prepare_data():
+    data_frame = read_csv_file()
+    data_frame.title = data_frame.title.interpolate(
+        method='linear',
+        limit_direction='forward',
+        axis=0
+    )
+    data_frame.title = data_frame.title.fillna(method='bfill')
+    data_list = list(data_frame.itertuples(index=False, name=None))
+    return data_list[:1100]
 
-@app("/recommender")
-async def serve(q: Q):
-    """
-    Displays the recommended movies according to the input.
-    If the user cannot find the movie, they can find movies that match the given input.
-    """
-    msg = ""
+# Set variable dataSet
+data_set = prepare_data()
 
+# Function to convert all elements in the tuples to strings
+def stringify_content(int_list):
+    return [list(map(str, i)) for i in int_list]
+
+# Indicate that a function is a query handler.
+@app('/')
+async def controller(q):
     if not q.client.initialized:
-        q.client.initialized = True
-
-    if q.args.search:
-        del q.page["movies"]
-        q.args.search_box_input = q.args.search_box_input.strip()
-       
-        if q.args.search_box_input in recommender.movie_names:
-            result = recommender.recommend(q.args.search_box_input)
-
-            msg = f"If you like {q.args.search_box_input}, you may also like!"
-            add_movie_cards(result, q)
-
-        elif q.args.search_box_input is None or q.args.search_box_input == "":
-            msg = "Movie name cannot be blank."
-
-        else:
-            msg = f'"{q.args.search_box_input}" is not in our database or is an invalid movie name.\
-            Use the "Find Movie" button to find movies'
-
-    if q.args.find_movies:
-        q.args.search_box_input = q.args.search_box_input.strip()
-        if q.args.search_box_input is None or q.args.search_box_input == "":
-            msg = "Movie name cannot be blank."
-        else:
-            for i in range(1, 6):
-                del q.page[f"movie{i}"]
-            add_similar_movies(q)
-
-    add_search_box(q, msg)
-    add_header(q)
-    add_footer(q)
-
+        main_app(q)
+        table_view(q)
+        actor_view(q)
+    
+    # Finally, save the page.
     await q.page.save()
 
+# Main app setup
+def main_app(q):
+    q.page['active_page_controller'] = ui.meta_card(
+        theme='h2o-dark',
+        box='activePageController',
+        layouts=[
+            ui.layout(
+                breakpoint='l',
+                zones=[
+                    ui.zone('header'),
+                    ui.zone('content'),
+                    ui.zone('footer'),
+                ]),
+        ])
 
-def add_similar_movies(q: Q):
-    similar_movies = search_movies(q.args.search_box_input)
-    q.page["movies"] = ui.form_card(
-        box="2 4 10 7",
-        items=[
-            ui.copyable_text(
-                value=movie[0],
-                name=f"movie_match{i+1}",
-                label=f"{movie[1]}% match",
-            )
-            for i, movie in enumerate(similar_movies)
-        ],
+    q.page['header'] = ui.header_card(
+        box='header',
+        subtitle="H2O WAVE APPLICATION",
+        icon='MyMoviesTV',
+        title='''Movie Recommendation System''',
+    )
+    
+    q.page['footer'] = ui.footer_card(
+        box='footer',
+        caption='''
+        Chamika Srimantha
+        ©2024 All rights reserved.'''
     )
 
+    q.client.initialized = True
 
-def add_movie_cards(result, q: Q):
-    for i in range(1, 6):
-        q.page[f"movie{i}"] = ui.tall_article_preview_card(
-            box=f"{2*i} 4 2 7",
-            title=f"{result[i-1].title}",
-            subtitle=f"{result[i-1].director}",  # Assuming 'director' is available for movies
-            value=f"{result[i-1].release_year}",  # Assuming 'release_year' is available for movies
-            name="tall_article",
-            image=f"{result[i-1].poster}",  # Assuming 'poster' URL is available for movies
-            items=[
-                ui.text(f"{result[i-1].genre}", size="l"),  # Assuming 'genre' is available for movies
-                ui.text(f"Rating: {result[i-1].rating}", size="m"),  # Assuming 'rating' is available for movies
-            ],
-        )
-
-
-def add_search_box(q: Q, msg):
-    q.page["search_box"] = ui.form_card(
-        box="2 2 10 2",
+# Table view setup
+def table_view(q):
+    string_data_set = stringify_content(data_set)
+    q.page['table_view'] = ui.form_card(
+        box='content',
         items=[
-            ui.textbox(
-                name="search_box_input",
-                label="Movie Name",
-                value=q.args.search_box_input,
-            ),
-            ui.buttons(
-                items=[
-                    ui.button(
-                        name="search",
-                        label="Search",
-                        primary=True,
-                        icon="Movie",
-                    ),
-                    ui.button(name="find_movies", label="Show Recommendation", primary=False),
-                ]
-            ),
-            ui.text(msg, size="m", name="msg_text"),
-        ],
-    )
-
-
-def add_footer(q: Q):
-    caption = """___Developed by Chamika Srimantha__ <br /> using __[h2o Wave](https://wave.h2o.ai/docs/getting-started).__"""
-    q.page["footer"] = ui.footer_card(
-        box="2 11 10 2",
-        caption=caption,
-        items=[
-            ui.inline(
-                justify="end",
-                items=[
-                    ui.links(
-                        label="Contact Me",
-                        width="200px",
-                        items=[
-                            ui.link(
-                                name="github",
-                                label="GitHub",
-                                path="https://github.com/chamikasrimantha/h2o-wave-app",
-                                target="_blank",
-                            ),
-                            ui.link(
-                                name="linkedin",
-                                label="LinkedIn",
-                                path="https://www.linkedin.com/in/chamika-srimantha/",
-                                target="_blank",
-                            ),
-                        ],
-                    ),
+            ui.text_xl(content='All Movies'),
+            ui.table(
+                name="data_table",
+                columns=[
+                    ui.table_column(
+                        name='title', label='Movie Name', sortable=True, searchable=True, max_width='400'),
+                    ui.table_column(
+                        name='hero', label='Actor Name', searchable=True, sortable=True),
+                    ui.table_column(
+                        name='genre', label='Genre', searchable=True, sortable=True),
+                    ui.table_column(
+                        name='year', label='Released Year', searchable=True, sortable=True),
+                    ui.table_column(
+                        name='rating', label='Rating', searchable=True, sortable=True),
                 ],
+                rows=[
+                    ui.table_row(
+                        name=str(i + 1),
+                        cells=string_data_set[i]
+                    ) for i in range(len(string_data_set))
+                ],
+                downloadable=True,
+                width="100%",
+                height='500px',
+                resettable=True,
             ),
         ],
     )
+
+
+
+
+
+
+# Actor view setup
+def actor_view(q):
+    # Read the result from the CSV file
+    result_df = pd.read_csv('./data/result.csv')
+
+    # Convert the DataFrame to a list of tuples
+    data_set = [(row['Name'], row['Rating']) for index, row in result_df.iterrows()]
+
+    # string_data_set = stringify_content(data_set)
+
+    q.page['analysis'] = ui.plot_card(
+        box='content',
+        title='Predicted rating for 2024',
+        data=data('actor rating', 5, rows=data_set),
+        plot=ui.plot([ui.mark(type='interval', x='=actor', y='=rating', y_min=0)])
+    )
+
