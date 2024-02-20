@@ -67,7 +67,7 @@ def main_app(q):
 
     q.page['header'] = ui.header_card(
         box='header',
-        subtitle="H2O WAVE APPLICATION",
+        subtitle="by Chamika Srimantha",
         icon='MyMoviesTV',
         title='''Movie Recommendation System''',
     )
