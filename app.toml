@@ -1,8 +1,0 @@
-[App]
-Name = "ai.h2o.wave.my-movie-recommendation"
-Version = "0.0.1"
-Title = "Movie_Recommendation"
-Description = "Users can search movie names and get released year, rating, and actor names and can see a predicted rating of actors."
-
-[Runtime]
-Module = "app"

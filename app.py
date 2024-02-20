@@ -53,7 +53,7 @@ async def controller(q):
 # Main app setup
 def main_app(q):
     q.page['active_page_controller'] = ui.meta_card(
-        theme='h2o-dark',
+        theme='h2o-light',
         box='activePageController',
         layouts=[
             ui.layout(
