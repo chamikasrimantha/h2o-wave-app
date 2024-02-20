@@ -48,7 +48,7 @@ wave run app
 Point your favorite web browser to http://localhost:10101/
 
 ### Testing
-Tests are located in ```/tests```. See instructions on [h2o wave docs](https://wave.h2o.ai/docs/browser-testing) to configure tests.
+Tests are located in ```test.py```. See instructions on [h2o wave docs](https://wave.h2o.ai/docs/browser-testing) to configure tests.
 
 ### Others
 
