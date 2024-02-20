@@ -18,7 +18,7 @@ def predict_rating(actor, year):
 
 # Function to save predicted rating as result.csv for year xxxx
 def caller():
-    actor_names = ['vijay', 'Ajith', 'Surya', 'Rajini', 'Kamal Hasan']
+    actor_names = ['Tom Hanks', 'Meryl Streep', 'Leonardo DiCaprio', 'Brad Pitt', 'Emma Watson']
     prediction_year = 2024
     data = []
 
