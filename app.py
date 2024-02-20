@@ -68,14 +68,13 @@ def main_app(q):
     q.page['header'] = ui.header_card(
         box='header',
         subtitle="by Chamika Srimantha",
-        icon='MyMoviesTV',
-        title='''Movie Recommendation System''',
+        title='''Movie Recommendation System using h2o wave''',
     )
     
     q.page['footer'] = ui.footer_card(
         box='footer',
         caption='''
-        Chamika Srimantha
+        Developed by Chamika Srimantha
         ©2024 All rights reserved.'''
     )
 
@@ -87,7 +86,7 @@ def table_view(q):
     q.page['table_view'] = ui.form_card(
         box='content',
         items=[
-            ui.text_xl(content='All Movies'),
+            ui.text_xl(content='Enter the movie name in the search box'),
             ui.table(
                 name="data_table",
                 columns=[
@@ -123,13 +122,11 @@ def table_view(q):
 
 # Actor view setup
 def actor_view(q):
-    # Read the result from the CSV file
+
     result_df = pd.read_csv('./data/result.csv')
 
-    # Convert the DataFrame to a list of tuples
     data_set = [(row['Name'], row['Rating']) for index, row in result_df.iterrows()]
 
-    # string_data_set = stringify_content(data_set)
 
     q.page['analysis'] = ui.plot_card(
         box='content',
@@ -137,4 +134,3 @@ def actor_view(q):
         data=data('actor rating', 5, rows=data_set),
         plot=ui.plot([ui.mark(type='interval', x='=actor', y='=rating', y_min=0)])
     )
-
