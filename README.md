@@ -2,7 +2,7 @@
 
 The Movie Recommendation System is an application designed to suggest movies to users based on their preferences and viewing history. It employs collaborative filtering techniques to analyze user behavior and generate personalized recommendations.
 
-https://github.com/chamikasrimantha/h2o-wave-app/assets/137622812/72d94f44-b3f4-47b5-9443-97d0de48cda1
+https://github.com/chamikasrimantha/h2o-wave-app/assets/137622812/acbc43b7-36f5-4859-ae62-0b22b06ed096
 
 
 ## Getting Started
